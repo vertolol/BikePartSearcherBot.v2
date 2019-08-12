@@ -133,7 +133,7 @@ def category_choice(bot, update):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text=u"Окей, теперь выберете категорию."
+        text=u"Выберете категорию."
     )
 
     data = query.data
@@ -223,7 +223,7 @@ def main():
         states={
             CHOOSE_STORES: [CallbackQueryHandler(category_choice,
                                                  pattern=str(CHOOSE_CATEGORY),
-                                                 pass_user_data=True),
+                                                 ),
                             CallbackQueryHandler(store_choice,
                                                  pass_user_data=True)],
 
@@ -231,7 +231,7 @@ def main():
                                                    pattern=f'^(.*{LAST_SIBLING})$',
                                                    pass_user_data=True),
                               CallbackQueryHandler(category_choice,
-                                                   pass_user_data=True),
+                                                   ),
                               ],
             GET_RESULT: [MessageHandler(Filters.text,
                                         get_result,

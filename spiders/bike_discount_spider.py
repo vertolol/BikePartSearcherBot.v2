@@ -16,7 +16,6 @@ class BikeDiscountSpider(AbstractSpider):
         req = self.get_html()
         soup = BeautifulSoup(req, 'lxml')
         ul = soup.find(class_='warengruppe-detail-gallery uk-grid')
-        print(self.url)
         list_items = ul.find_all(class_='uk-width-1-2 uk-width-medium-1-3')
         return list_items
 
