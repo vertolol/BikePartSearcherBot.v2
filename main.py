@@ -1,4 +1,3 @@
-
 import logging
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
@@ -7,7 +6,7 @@ from telegram.ext import (CallbackQueryHandler, CommandHandler,
                           Updater)
 
 from spiders.spiders_launcher import run_spiders
-from static_data import category_tree, examples_part_name, stores
+from static_data import categories, examples_part_name, stores
 from TOKEN import TOKEN
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,14 +15,19 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 CHOOSE_STORES, CHOOSE_CATEGORY, GET_RESULT = range(3)
-selected = '🔳 '
-not_selected = '⬜️️ '
-stores_for_select = dict(zip([selected + store for store in stores.stores], stores.stores))
+SELECTED = '🔳 '
+NOT_SELECTED = '⬜️️ '
+stores_for_select = dict(zip([SELECTED + store for store in stores.stores], stores.stores))
 stores_for_select.update({'done': str(CHOOSE_CATEGORY)})
 LAST_SIBLING = '_last_sibling'
 
 
-def get_keyboard_from_dictionary(dictionary, columns=2):
+def get_keyboard_from_dictionary(dictionary: dict, columns=2) -> list:
+    """Преобразовывает словарь в список кнопок.
+    :param dictionary: принимает словарь, keys - текст кнопки, values - callback data
+    :param columns: определяет количество колонок клавиатуры (Default value = 2)
+    :returns: список объектов кнопок(InlineKeyboardButton)
+    """
     buttons = [InlineKeyboardButton(key, callback_data=value) for key, value in dictionary.items()]
     keyboard = []
     for index in range(0, len(buttons), columns):
@@ -32,17 +36,22 @@ def get_keyboard_from_dictionary(dictionary, columns=2):
     return keyboard
 
 
-def get_keyboard_of_selection(data, keyboard):
+def get_keyboard_of_selection(data: str, keyboard: list) -> list:
+    """Изменяет текст кнопки.
+    :param data: callback data кнопки, текст которой нужно изменить
+    :param keyboard: список кнопок(InlineKeyboardButton) клавиатуры, в которой нужно изменить текст кнопки
+    :returns: список объектов кнопок(InlineKeyboardButton)
+    """
     buttons = []
     for row in keyboard:
         new_row = []
 
         for button in row:
-            if data in button.text:
-                if selected in button.text:
-                    button.text = button.text.replace(selected, not_selected)
+            if data in button.callback_data:
+                if SELECTED in button.text:
+                    button.text = button.text.replace(SELECTED, NOT_SELECTED)
                 else:
-                    button.text = button.text.replace(not_selected, selected)
+                    button.text = button.text.replace(NOT_SELECTED, SELECTED)
 
             new_row.append(button)
         buttons.append(new_row)
@@ -50,24 +59,35 @@ def get_keyboard_of_selection(data, keyboard):
     return buttons
 
 
-def get_stores_for_search(keyboard):
+def get_stores_for_search(keyboard: list) -> list:
+    """Возвращает список выбранных кнопок.
+    :param keyboard: список кнопок(InlineKeyboardButton) клавиатуры
+    :returns: список с текстами кнопок.
+    """
     stores_list = []
     for row in keyboard:
         for button in row:
-            if selected in button.text:
-                stores_list.append(button.text.replace(selected, ''))
+            if SELECTED in button.text:
+                stores_list.append(button.text.replace(SELECTED, ''))
     return stores_list
 
 
-def get_category_choice_dict(data):
+def get_category_choice_dict(data: str) -> dict:
+    """Возвращает словарь с категориями.
+    Первый вызов, когда data = CHOOSE_CATEGORY, корневой словарь категорий
+    Следующие вызовы возвращают категории ниже по дереву
+    Если текущий узел не имеет потомков, к ключу добавляется постфикс LAST_SIBLING
+    :param data: callback data кнопки
+    :returns: словарь категорий для преобразования в клавиатуру
+    """
     if data == str(CHOOSE_CATEGORY):
-        category_choice_dict = category_tree.category_for_select
+        category_choice_dict = categories.category_for_select
     else:
-        category_choice_dict = category_tree.all_categories[data]
+        category_choice_dict = categories.categories_with_siblings[data]
 
-    for i in category_choice_dict:
-        if category_choice_dict[i] not in category_tree.all_categories:
-            category_choice_dict[i] += LAST_SIBLING
+    for key in category_choice_dict:
+        if category_choice_dict[key] not in categories.categories_with_siblings:
+            category_choice_dict[key] += LAST_SIBLING
 
     return category_choice_dict
 
@@ -83,7 +103,7 @@ def start(bot, update, user_data):
 
     bot.send_message(
         chat_id=query.message.chat_id,
-        text=u"Выбор магазинов для поиска",
+        text=u"Выберете магазины, в которых нужно найти деталь.",
         reply_markup=reply_markup
     )
 
@@ -107,13 +127,13 @@ def store_choice(bot, update, user_data):
     return CHOOSE_STORES
 
 
-def category_choice(bot, update, user_data):
+def category_choice(bot, update):
     query = update.callback_query
 
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text=u"Выбор категории"
+        text=u"Окей, теперь выберете категорию."
     )
 
     data = query.data
@@ -138,7 +158,7 @@ def inputting_part_name(bot, update, user_data):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text=f'''Ведите название детали. \nНапример: \n{examples}'''
+        text=f'''И ведите название детали. \nНапример: \n{examples}'''
     )
 
     return GET_RESULT
@@ -157,13 +177,17 @@ def get_result(bot, update, user_data):
         action=ChatAction.TYPING)
 
     results = run_spiders(stores_for_search, category, part_name)
+    if results:
+        text = f'Вот что мне удалось найти по запросу: <b>{part_name}</b>:\n {results}'
+    else:
+        text = 'К сожалению я ничего не нашел.Если хотите попробовать снова, просто нажмите \start'
 
     bot.send_message(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
         parse_mode='HTML',
         disable_web_page_preview=True,
-        text=f"results <b>{part_name}</b>:\n {results}"
+        text=text
     )
 
     return ConversationHandler.END
@@ -171,7 +195,6 @@ def get_result(bot, update, user_data):
 
 def conversation_error(bot, update, user_data):
     query = update
-
     user_data.clear()
 
     bot.send_message(
@@ -183,16 +206,15 @@ def conversation_error(bot, update, user_data):
     return ConversationHandler.END
 
 
-def error(bot, update, error):
-    """Log Errors caused by Updates."""
+def error_logging(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def main():
-    REQUEST_KWARGS = {
+    request_kwargs = {
         'proxy_url': 'https://144.217.161.149:8080',
     }
-    updater = Updater(token=TOKEN, request_kwargs=REQUEST_KWARGS)
+    updater = Updater(token=TOKEN, request_kwargs=request_kwargs)
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
@@ -220,7 +242,7 @@ def main():
     )
 
     dp.add_handler(conv_handler)
-    dp.add_error_handler(error)
+    dp.add_error_handler(error_logging)
     updater.start_polling()
     updater.idle()
 

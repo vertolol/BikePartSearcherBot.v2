@@ -37,7 +37,7 @@ mtb_rear_derailleurs = {
 }
 
 
-all_categories = {
+categories_with_siblings = {
     'mtb': mtb,
     'mtb_brakes': mtb_brakes,
     'mtb_forks': mtb_forks,

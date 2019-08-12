@@ -13,7 +13,8 @@ class BikeComponentsSpider(AbstractSpider):
 
     def get_list_items(self):
         req = self.get_json()
-        return req['products']
+        list_items = req['products']
+        return list_items
 
     def scrape_data(self, item):
         name = item['name']
