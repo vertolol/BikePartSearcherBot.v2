@@ -38,7 +38,7 @@ class AbstractSpider(ABC):
 
     @property
     def url(self) -> str:
-        return self.TEMPLATE_URL.format(self.category_code, self.item_name.replace(' ', '%20'))
+        return self.TEMPLATE_URL.format(self.category_code, self.item_name.replace(' ', '+'))
 
     @abstractmethod
     def get_list_items(self) -> List[item_type]:

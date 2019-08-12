@@ -92,14 +92,13 @@ def get_category_choice_dict(data: str) -> dict:
     return category_choice_dict
 
 
-store_choice_reply_keyboard = get_keyboard_from_dictionary(stores_for_select)
-
-
 def start(bot, update, user_data):
     query = update
 
-    reply_markup = InlineKeyboardMarkup(store_choice_reply_keyboard)
-    user_data['stores_for_search'] = get_stores_for_search(store_choice_reply_keyboard)
+    user_data['store_choice_keyboard'] = get_keyboard_from_dictionary(stores_for_select)
+    user_data['stores_for_search'] = get_stores_for_search(user_data['store_choice_keyboard'])
+    reply_markup = InlineKeyboardMarkup(user_data['store_choice_keyboard'])
+
 
     bot.send_message(
         chat_id=query.message.chat_id,
@@ -114,7 +113,7 @@ def store_choice(bot, update, user_data):
     query = update.callback_query
 
     data = update.callback_query.data
-    updated_keyboard = get_keyboard_of_selection(data, store_choice_reply_keyboard)
+    updated_keyboard = get_keyboard_of_selection(data, user_data['store_choice_keyboard'])
     reply_markup = InlineKeyboardMarkup(updated_keyboard)
     user_data['stores_for_search'] = get_stores_for_search(updated_keyboard)
 
