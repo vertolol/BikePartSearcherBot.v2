@@ -1,7 +1,7 @@
 # Бот для Telegram
 
 Бот для поиска запчастей для велосипеда, с сортировкой по цене. 
-В процессе поиска можно выбрать сайты по которым будет произведен поиск. Список доступных сайтов [stores.py](https://github.com/vertolol/BikePartSearcherBot.v2/blob/master/static_data/stores.py),
+В процессе поиска можно выбрать сайты по которым будет произведен поиск. Список доступных сайтов [stores.py](https://github.com/vertolol/BikePartSearcherBot.v2/blob/master/static_data/stores.py).
 Далее выбирается категория для поиска, и ввод названия детали.
 Написан на Python3.7, с использованием библиотеки [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
 

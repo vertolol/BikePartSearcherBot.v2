@@ -99,7 +99,6 @@ def start(bot, update, user_data):
     user_data['stores_for_search'] = get_stores_for_search(user_data['store_choice_keyboard'])
     reply_markup = InlineKeyboardMarkup(user_data['store_choice_keyboard'])
 
-
     bot.send_message(
         chat_id=query.message.chat_id,
         text=u"Выберете магазины, в которых нужно найти деталь.",
@@ -177,9 +176,10 @@ def get_result(bot, update, user_data):
 
     results = run_spiders(stores_for_search, category, part_name)
     if results:
-        text = f'Вот что мне удалось найти по запросу: <b>{part_name}</b>:\n {results}'
+        text = f'Вот что мне удалось найти по запросу <b>{part_name}</b>:\n {results}'
     else:
-        text = 'К сожалению я ничего не нашел.Если хотите попробовать снова, просто нажмите \start'
+        text = 'К сожалению я ничего не нашел. '
+        'Если хотите попробовать снова, просто нажмите /start'
 
     bot.send_message(
         chat_id=query.message.chat_id,
@@ -203,6 +203,21 @@ def conversation_error(bot, update, user_data):
     )
 
     return ConversationHandler.END
+
+
+def help_(bot, update):
+    query = update
+
+    bot.send_message(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
+        text='Бот для поиска запчастей для велосипеда, '
+        'с сортировкой по цене. '
+        'В процессе поиска можно выбрать сайты '
+        'по которым будет произведен поиск. '
+        'Далее выбирается категория для поиска, и ввод названия детали. '
+        'Что бы начать нажмите /start'
+    )
 
 
 def error_logging(bot, update, error):
@@ -240,6 +255,7 @@ def main():
         fallbacks=[MessageHandler(Filters.text, conversation_error, pass_user_data=True)]
     )
 
+    dp.add_handler(CommandHandler("help", help_))
     dp.add_handler(conv_handler)
     dp.add_error_handler(error_logging)
     updater.start_polling()
