@@ -1,5 +1,6 @@
 import logging
 
+from format_data import to_caption, to_image
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (CallbackQueryHandler, CommandHandler,
                           ConversationHandler, Filters, MessageHandler,
@@ -175,19 +176,32 @@ def get_result(bot, update, user_data):
         action=ChatAction.TYPING)
 
     results = run_spiders(stores_for_search, category, part_name)
+    res_size = 3
+
     if results:
-        text = f'Вот что мне удалось найти по запросу <b>{part_name}</b>:\n {results}'
+
+        for index in range(0, len(results), res_size):
+            res_for_format = results[index:index+res_size]
+
+            caption = to_caption.get_caption(res_for_format, index+1)
+            merge_image = to_image.get_merge_image(res_for_format, index+1)
+
+            bot.send_photo(
+                chat_id=query.message.chat_id,
+                photo=open(merge_image, 'rb'),
+                caption=caption,
+                parse_mode = 'HTML'
+            )
     else:
         text = 'К сожалению я ничего не нашел. '
         'Если хотите попробовать снова, просто нажмите /start'
 
-    bot.send_message(
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id,
-        parse_mode='HTML',
-        disable_web_page_preview=True,
-        text=text
-    )
+        bot.send_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            disable_web_page_preview=True,
+            text=text
+        )
 
     return ConversationHandler.END
 
@@ -226,7 +240,7 @@ def error_logging(bot, update, error):
 
 def main():
     request_kwargs = {
-        'proxy_url': 'https://144.217.161.149:8080',
+        'proxy_url': 'https://186.103.175.158:3128',
     }
     updater = Updater(token=TOKEN, request_kwargs=request_kwargs)
     dp = updater.dispatcher

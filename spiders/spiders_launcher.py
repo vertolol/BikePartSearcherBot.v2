@@ -1,6 +1,6 @@
-from bike24_spider import Bike24Spider
-from bike_components_spider import BikeComponentsSpider
-from bike_discount_spider import BikeDiscountSpider
+from .bike24_spider import Bike24Spider
+from .bike_components_spider import BikeComponentsSpider
+from .bike_discount_spider import BikeDiscountSpider
 
 spiders = {
     'bike_24': Bike24Spider,
@@ -9,7 +9,7 @@ spiders = {
 }
 
 
-def run_spiders(stores: list, category: str, item_name: str) -> str:
+def run_spiders(stores: list, category: str, item_name: str) -> list:
     """
     Запускает пауков из списка stores
     :param stores: список магазинов в которых будет производится поиск
@@ -23,18 +23,5 @@ def run_spiders(stores: list, category: str, item_name: str) -> str:
         result_list.extend(res)
 
     result_list.sort(key=lambda x: list(x.values())[0]['price'])
-    return repr_in_html(result_list)
+    return result_list
 
-
-def repr_in_html(result_list: list) -> str:
-    """
-    :return: список результатов в HTML
-    """
-    text = ''
-    for ind, item in enumerate(result_list, 1):
-        name = list(item.keys())[0]
-        price = item[name]['price']
-        url = item[name]['link']
-        text += f'{ind}. <b>{price}€</b> {name} \n<a href="{url}">{url[:35]}...</a>\n'
-
-    return text

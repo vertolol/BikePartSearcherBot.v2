@@ -5,6 +5,7 @@ from typing import TypeVar, List
 
 item_type = TypeVar('item_type', dict, BeautifulSoup)
 
+
 class AbstractSpider(ABC):
     """Базовый класс для извлечеия данных с сайта
     CATEGORY_CODES: словарь с кодами категорий
@@ -55,7 +56,9 @@ class AbstractSpider(ABC):
         Извлекает информацию о конкретной детали
         :param item: контейнер с описанием детали
         :return: словарь с информацией о детали в формате:
-        {name: {'price': price, 'link': link}}
+        {name: {'price': price,
+                'link': link,
+                'img': img}}
         """
         pass
 

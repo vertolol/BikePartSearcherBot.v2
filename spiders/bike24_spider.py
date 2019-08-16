@@ -28,7 +28,11 @@ class Bike24Spider(AbstractSpider):
         price_string = item.find(class_='text-price').text
         price = self.price_to_float(price_string)
         link = item.find(class_='text-title h4').a['href']
-        cell = {name: {'price': price, 'link': link}}
+        img = item.find(class_='box-image-product').img['src'].split('?')[0]
+
+        cell = {name: {'price': price,
+                       'link': link,
+                       'img': img}}
         return cell
 
     def price_to_float(self, price_string):
