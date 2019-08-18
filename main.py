@@ -181,11 +181,11 @@ def get_result(bot, update, user_data):
     if results:
         res_size = 3
 
-        for index in range(0, len(results), res_size):
+        for number, index in enumerate(range(0, len(results), res_size), start=1):
             res_for_format = results[index:index+res_size]
 
-            caption = to_caption.get_caption(res_for_format, index+1)
-            merge_image = to_image.get_merge_image(res_for_format, index+1)
+            caption = to_caption.get_caption(res_for_format, number)
+            merge_image = to_image.get_merge_image(res_for_format, number)
 
             bot.send_photo(
                 chat_id=query.message.chat_id,
