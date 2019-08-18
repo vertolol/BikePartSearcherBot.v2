@@ -151,6 +151,7 @@ def category_choice(bot, update):
 
 def inputting_part_name(bot, update, user_data):
     query = update.callback_query
+
     user_data['category'] = query.data.replace(LAST_SIBLING, '')
     examples = "\n".join(examples_part_name.examples[user_data['category']])
 
@@ -176,9 +177,9 @@ def get_result(bot, update, user_data):
         action=ChatAction.TYPING)
 
     results = run_spiders(stores_for_search, category, part_name)
-    res_size = 3
 
     if results:
+        res_size = 3
 
         for index in range(0, len(results), res_size):
             res_for_format = results[index:index+res_size]
@@ -208,6 +209,7 @@ def get_result(bot, update, user_data):
 
 def conversation_error(bot, update, user_data):
     query = update
+
     user_data.clear()
 
     bot.send_message(
