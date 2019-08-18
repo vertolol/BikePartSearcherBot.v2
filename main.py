@@ -191,7 +191,7 @@ def get_result(bot, update, user_data):
                 chat_id=query.message.chat_id,
                 photo=open(merge_image, 'rb'),
                 caption=caption,
-                parse_mode = 'HTML'
+                parse_mode='HTML'
             )
     else:
         text = 'К сожалению я ничего не нашел. '
